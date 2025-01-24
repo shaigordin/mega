@@ -1,0 +1,84 @@
+---
+title: "mega"
+---
+
+```{r}
+#| eval: false
+#| include: false
+install.packages("DT")
+library(DT)
+library(readr)
+library(dplyr)
+library(jsonlite)
+library(visNetwork)
+
+```
+This is a Quarto website.
+
+To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+
+```{r}
+#| eval: false
+#| include: false
+# Step 1: Load the dataset
+lemma_data <- read_csv("Lemma-base-draft-ADJ.csv")
+
+# Step 2: Inspect the structure
+glimpse(lemma_data)
+
+# Step 3: Categorize data
+ontology_groups <- list(
+  identification = lemma_data %>% select(transliteration, sorting, base, variant),
+  linguistic_features = lemma_data %>% select(period, morphology, number, person, POS, frequency),
+  semantics_context = lemma_data %>% select(semantics, proper_name_context, loan_lang, lang_context),
+  validation_contribution = lemma_data %>% select(contributor, validator),
+  supplementary_notes = lemma_data %>% select(pagenumber, Notes, rich)
+)
+
+# Step 4: Save to JSON
+write_json(ontology_groups, "lemma_data.json", pretty = TRUE)
+```
+
+```{r}
+#| eval: false
+#| include: false
+# Step 1: Prepare a subset for the table
+table_data <- lemma_data %>%
+  select(transliteration, period, morphology, semantics, contributor, frequency)
+
+# Step 2: Create an interactive table
+datatable(
+  table_data,
+  options = list(
+    pageLength = 10,
+    autoWidth = TRUE,
+    searchHighlight = TRUE
+  ),
+  escape = FALSE # Allow rich HTML content rendering
+) %>%
+  saveWidget("lemma_table.html", selfcontained = TRUE)
+```
+
+```{r}
+#| eval: false
+#| include: false
+# Extract unique nodes
+nodes <- lemma_data %>%
+  filter(!is.na(base)) %>%
+  distinct(base) %>%
+  mutate(id = row_number(), label = base)
+
+# Extract edges based on cognate relationships
+edges <- lemma_data %>%
+  filter(!is.na(base) & !is.na(cognate)) %>%
+  transmute(
+    from = match(base, nodes$label),
+    to = match(cognate, nodes$label)
+  ) %>%
+  filter(!is.na(from) & !is.na(to))
+
+# Step 2: Create the network visualization
+visNetwork(nodes, edges) %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) %>%
+  saveWidget("lemma_network.html", selfcontained = TRUE)
+```

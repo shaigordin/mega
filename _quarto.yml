@@ -1,0 +1,35 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "mega"
+  open-graph: true
+  reader-mode: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+      
+  page-footer:
+    background: light
+    center: "© Digital Pasts Lab, 2025"
+    left: 
+      - icon: github
+        href: https://github.com/DigitalPasts
+        aria-label: DigPasts GitHub
+      - icon: twitter 
+        href: https://twitter.com/shgordin
+        aria-label: Shai Gordin Twitter
+      - icon: envelope
+        href: mailto:digpasts@gmail.com
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+
